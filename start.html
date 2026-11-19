@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Join VICEFEED · Create your clipper profile</title>
+  <meta name="theme-color" content="#08050d">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,600..900&family=Geist:wght@400..800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=2">
+  <link rel="stylesheet" href="css/start.css?v=3">
+</head>
+<body class="ob-body">
+<div class="ob" id="ob" data-step="0">
+
+  <!-- left: live preview -->
+  <aside class="ob__stage" aria-hidden="true">
+    <div class="ob__sky"><canvas class="ob__scene" id="obScene"></canvas><div class="ob__sun"></div><div class="grain"></div></div>
+    <a class="ob__brand" href="./"><img src="assets/icon-256.png" alt=""><img src="assets/wordmark-sm.png" alt="VICEFEED"></a>
+    <div class="ob__float ob__float--a"><img src="assets/icon.png" alt=""></div>
+    <div class="card3d" id="card">
+      <div class="pcard">
+        <div class="pcard__shine"></div>
+        <div class="pcard__top">
+          <span class="pcard__av" id="pAv">?</span>
+          <div class="pcard__id">
+            <b id="pHandle">@yourname</b>
+            <span>Clipper · Level 1</span>
+          </div>
+          <img class="pcard__mark" src="assets/icon-256.png" alt="">
+        </div>
+        <div class="pcard__pf" id="pPf">
+          <span class="pchip" data-pf="tiktok"><span class="pf pf--tiktok"><i data-i="tiktok"></i></span><b id="pTt">TikTok</b></span>
+          <span class="pchip" data-pf="x"><span class="pf pf--x"><i data-i="xlogo"></i></span><b id="pX">X</b></span>
+        </div>
+        <div class="pcard__stats">
+          <div><span>Clips</span><b>0</b></div>
+          <div><span>Views</span><b>0</b></div>
+          <div><span>Earned</span><b>$0.00</b></div>
+        </div>
+        <div class="pcard__wallet" id="pWallet"><i data-i="sol" class="i--fill"></i><span>No wallet yet</span></div>
+      </div>
+    </div>
+    <p class="ob__caption">Your profile, live.</p>
+  </aside>
+
+  <!-- right: steps -->
+  <main class="ob__panel">
+    <div class="ob__top">
+      <button class="ib" id="backBtn" aria-label="Back"><i data-i="chevl"></i></button>
+      <div class="ob__dots" id="dots"><i></i><i></i></div>
+      <a class="ib" href="./" aria-label="Close"><i data-i="x"></i></a>
+    </div>
+
+    <div class="ob__steps">
+      <!-- 0: wallet -->
+      <section class="obs is-on" data-s="0">
+        <img class="obs__mark" src="assets/icon.png" alt="">
+        <h1 class="obs__h glossy">Clip GTA 6.<br>Get paid.</h1>
+        <p class="obs__p">Sign in with your Solana wallet. That's your account and where rewards land.</p>
+        <div class="auth">
+          <button class="wbtn wbtn--phantom" id="phantomBtn">
+            <span class="wbtn__m"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 13.2C4 8.1 7.6 4 12.4 4 17 4 20 7.7 20 11.6c0 4.7-3.4 8.4-6.3 8.4-1.2 0-1.7-.8-1.7-1.6 0 .9-.8 1.6-1.8 1.6-1 0-1.6-.6-1.6-1.6 0 .8-.6 1.6-1.6 1.6C5.1 20 4 17.2 4 13.2Zm8.3-3.4c-.6 0-1 .6-1 1.4s.4 1.4 1 1.4 1-.6 1-1.4-.4-1.4-1-1.4Zm3.4 0c-.6 0-1 .6-1 1.4s.4 1.4 1 1.4 1-.6 1-1.4-.4-1.4-1-1.4Z"/></svg></span>
+            <span class="wbtn__t"><b>Continue with Phantom</b><em id="phantomSub">Recommended</em></span>
+            <i data-i="arrow"></i>
+          </button>
+          <div class="wothers" id="otherWallets"></div>
+        </div>
+        <p class="obs__status" id="authStatus" role="status"></p>
+        <p class="obs__fine">Signing is free. It proves the wallet is yours and never moves funds.</p>
+      </section>
+
+      <!-- 1: username -->
+      <section class="obs" data-s="1">
+        <p class="obs__k">Step 1 of 2</p>
+        <h1 class="obs__h glossy">Pick your username.</h1>
+        <label class="handle" id="handleBox">
+          <span>@</span>
+          <input id="handleIn" type="text" maxlength="24" placeholder="leonida.clips" autocomplete="off" spellcheck="false" autocapitalize="off">
+          <em id="handleOk"><i data-i="check"></i><span>Available</span></em>
+        </label>
+        <p class="obs__hint" id="handleHint">3–24 characters: letters, numbers, dots, underscores.</p>
+        <p class="obs__label">Avatar</p>
+        <div class="avs" id="avs">
+          <button class="av" data-av="0" aria-label="Sunset avatar"></button>
+          <button class="av" data-av="1" aria-label="Ocean avatar"></button>
+          <button class="av" data-av="2" aria-label="Neon avatar"></button>
+          <button class="av" data-av="3" aria-label="Gold avatar"></button>
+          <button class="av" data-av="4" aria-label="Night avatar"></button>
+        </div>
+        <button class="btn btn--lg btn--block obs__go" id="go1" disabled>Continue</button>
+      </section>
+
+      <!-- 2: pages -->
+      <section class="obs" data-s="2">
+        <p class="obs__k">Step 2 of 2</p>
+        <h1 class="obs__h glossy">Link your pages.</h1>
+        <p class="obs__p">We match your clips to these accounts, so only your posts count.</p>
+        <div class="links">
+          <label class="lnk"><span class="pf pf--tiktok"><i data-i="tiktok"></i></span><span class="lnk__at">tiktok.com/@</span><input id="ttIn" maxlength="30" placeholder="yourhandle" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+          <label class="lnk"><span class="pf pf--x"><i data-i="xlogo"></i></span><span class="lnk__at">x.com/</span><input id="xIn" maxlength="30" placeholder="yourhandle" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+        </div>
+        <p class="obs__hint">Add at least one. You can change these later.</p>
+        <p class="obs__status" id="saveStatus" role="status"></p>
+        <button class="btn btn--lg btn--block obs__go" id="go2" disabled>Create my profile</button>
+      </section>
+
+      <!-- 3: done -->
+      <section class="obs obs--done" data-s="3">
+        <canvas class="confetti" id="confetti"></canvas>
+        <p class="obs__k obs__k--ok"><i data-i="check"></i>Profile live</p>
+        <h1 class="obs__h glossy">You're in,<br><span class="sunset-text" id="doneHandle">@you</span></h1>
+        <p class="obs__p">Your watermark is ready in the editor.</p>
+        <div class="wmprev">
+          <div class="wmprev__frame"><canvas data-scene="highway"></canvas><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""><span id="doneWmH">@you</span></span></span></div>
+        </div>
+        <a class="btn btn--lg btn--block" href="editor/">Make my first clip <i data-i="arrow"></i></a>
+        <a class="ghost btn--block obs__alt" href="studio.html">Go to my studio</a>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=2"></script>
+<script src="js/scenes.js?v=2"></script>
+<script src="js/profile.js?v=2"></script>
+<script src="js/start.js?v=3"></script>
+</body>
+</html>

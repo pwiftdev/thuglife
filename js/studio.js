@@ -1,540 +1,199 @@
-/* $THUG — Thug Yourself studio
-   Everything renders locally on a <canvas>; nothing is uploaded. */
+/* VICEFEED — studio: live profile, claims and earnings */
 (function () {
   "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var icon = VF.icon;
+  var nf = new Intl.NumberFormat("en-US");
+  var S = { wallet: null, user: null, rate: 0.5, claims: [], totals: null, filter: "all", fresh: {} };
 
-  var MAX_SIDE = 2048;          // export resolution cap
-  var HANDLE = 11;              // handle half-size in CSS px
-  var ROT_GAP = 30;             // distance of rotate knob above item, CSS px
+  function api(path, body) {
+    return fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), credentials: "same-origin" } : { credentials: "same-origin" })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j._status = r.status; if (!r.ok) throw j; return j; }); });
+  }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function money(n) { return "$" + (n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function compact(n) { return n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 1 : 2).replace(/\.?0+$/, "") + "M" : n >= 1e4 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : nf.format(n || 0); }
+  function ago(iso) {
+    var s = (Date.now() - Date.parse(iso)) / 1000;
+    return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + "m ago" : s < 86400 ? Math.floor(s / 3600) + "h ago" : Math.floor(s / 86400) + "d ago";
+  }
+  var toastEl = $("#toast"), tt;
+  function toast(m) { toastEl.textContent = m; toastEl.classList.add("show"); clearTimeout(tt); tt = setTimeout(function () { toastEl.classList.remove("show"); }, 2600); }
 
-  /* ---------- source art ---------- */
-  // Pixel glasses, traced 1:1 from the uploaded artwork (25 × 5 grid).
-  var GLASSES = [
-    "#########################",
-    "##o#o######...##o#o######",
-    ".##o#o#####...###o#o####.",
-    "..##o#o###.....###o#o##..",
-    "...######.......######..."
-  ];
-  var G_W = 25, G_H = 5;
-  var gBlack = new Path2D(), gWhite = new Path2D();
-  GLASSES.forEach(function (row, y) {
-    for (var x = 0; x < row.length; x++) {
-      if (row[x] === "#") gBlack.rect(x, y, 1, 1);
-      else if (row[x] === "o") gWhite.rect(x, y, 1, 1);
-    }
-  });
+  /* ---------- count-up ---------- */
+  function countTo(el, to, fmt) {
+    var from = +(el.dataset.v || 0);
+    el.dataset.v = to;
+    if (reduce || from === to) { el.innerHTML = fmt(to); return; }
+    var t0 = performance.now(), D = 1100;
+    (function step() {
+      var k = Math.min(1, (performance.now() - t0) / D), e = 1 - Math.pow(1 - k, 4);
+      el.innerHTML = fmt(from + (to - from) * e);
+      if (k < 1) requestAnimationFrame(step);
+    })();
+  }
 
-  var jointImg = new Image();
-  var jointGray = null;
-  jointImg.onload = function () { jointGray = toGray(jointImg, jointImg.naturalWidth, jointImg.naturalHeight, 1.05); render(); };
-  jointImg.src = window.THUG_JOINT || "assets/joint.png";
+  /* ---------- profile ---------- */
+  function paintProfile() {
+    var u = S.user, h = "@" + u.username;
+    $("#meHandle").textContent = h; $("#helloHandle").textContent = h; $("#mkHandle").textContent = h;
+    var av = $("#meAv"); av.textContent = VF.profile.initials(u.username); av.style.background = VF.avatars[u.avatar || 0];
+    var w = S.wallet.slice(0, 4) + "…" + S.wallet.slice(-4);
+    $("#meWallet").textContent = w; $("#earnWallet").textContent = "Pays to " + w;
+    $("#stRate").textContent = money(S.rate);
+    var parts = [];
+    if (u.tiktok) parts.push("TikTok @" + u.tiktok);
+    if (u.x) parts.push("X @" + u.x);
+    $("#claimHelp").textContent = "Paste a TikTok or X link. We pull the views and check it's from " + parts.join(" or ") + ".";
+    // keep the editor's watermark in sync with the account
+    VF.profile.set({ handle: u.username, av: u.avatar, tiktok: u.tiktok, x: u.x, wallet: S.wallet });
+  }
 
-  var CAPTION = "Thug Life";
-  var CAPTION_FONT = '"UnifrakturCook", "Old English Text MT", serif';
+  /* ---------- totals ---------- */
+  function paintTotals() {
+    var t = S.totals || { views: 0, earned: 0, live: 0, pending: 0, count: 0 };
+    countTo($("#earnNum"), t.earned, function (v) { var p = v.toFixed(2).split("."); return "$" + nf.format(+p[0]) + "<span>." + p[1] + "</span>"; });
+    countTo($("#stViews"), t.views, function (v) { return compact(Math.round(v)); });
+    countTo($("#stLive"), t.live, function (v) { return Math.round(v); });
+    $("#stPending").textContent = t.pending ? t.pending + " pending" : "none pending";
+    $("#earnNote").textContent = t.live ? nf.format(t.views) + " counted views across " + t.live + " clip" + (t.live > 1 ? "s" : "") + "." : "Post a clip, paste the link below, and earnings show up here.";
+    var nc = $("#navCount"); nc.hidden = !t.count; nc.textContent = t.count;
+    chart();
+  }
+  // earnings line from each live claim's view history
+  function chart() {
+    var live = S.claims.filter(function (c) { return c.status === "live"; });
+    var pts = [];
+    live.forEach(function (c) { pts.push({ t: Date.parse(c.createdAt), e: c.earned }); });
+    pts.sort(function (a, b) { return a.t - b.t; });
+    var acc = 0, series = [0].concat(pts.map(function (p) { return (acc += p.e); }));
+    if (series.length < 2) series = [0, 0];
+    var max = Math.max.apply(null, series) || 1, n = series.length - 1;
+    var d = series.map(function (v, i) { return (i ? "L" : "M") + (i / n * 400).toFixed(1) + " " + (110 - v / max * 96).toFixed(1); }).join(" ");
+    $("#chartLine").setAttribute("d", d);
+    $("#chartFill").setAttribute("d", d + " L400 120 L0 120Z");
+  }
 
-  /* ---------- DOM ---------- */
-  var canvas = document.getElementById("studioCanvas");
-  var ctx = canvas.getContext("2d");
-  var stageEl = document.getElementById("stage");
-  var fileInput = document.getElementById("fileInput");
-  var exportBtn = document.getElementById("exportBtn");
-  var resetBtn = document.getElementById("resetBtn");
-  var bwToggle = document.getElementById("bwToggle");
-  var sizeRange = document.getElementById("sizeRange");
-  var rotRange = document.getElementById("rotRange");
-  var flipBtn = document.getElementById("flipBtn");
-  var frontBtn = document.getElementById("frontBtn");
-  var delBtn = document.getElementById("delBtn");
-  var selName = document.getElementById("selName");
-  var selGroup = document.getElementById("selGroup");
-
-  /* ---------- state ---------- */
-  var S = {
-    photo: null,      // HTMLCanvasElement (colour, scaled to W×H)
-    photoGray: null,  // HTMLCanvasElement (grayscale)
-    W: 0, H: 0,       // working/export size
-    items: [],        // {type, x, y, w, rot, flip}
-    sel: -1,
-    bw: true
+  /* ---------- rows ---------- */
+  var STATUS = {
+    processing: ["st--proc", "Processing"],
+    live: ["st--live", "Live"],
+    review: ["st--rev", "In review"],
+    not_yours: ["st--bad", "Not your account"],
+    rejected: ["st--bad", "Rejected"]
   };
-  var view = { scale: 1, cssW: 0, cssH: 0, dpr: 1 };
-
-  /* ---------- helpers ---------- */
-  function toGray(src, w, h, contrast) {
-    var c = document.createElement("canvas");
-    c.width = w; c.height = h;
-    var x = c.getContext("2d");
-    x.drawImage(src, 0, 0, w, h);
-    var d;
-    try { d = x.getImageData(0, 0, w, h); } catch (e) { return c; }
-    var p = d.data, k = contrast || 1;
-    for (var i = 0; i < p.length; i += 4) {
-      var l = 0.2126 * p[i] + 0.7152 * p[i + 1] + 0.0722 * p[i + 2];
-      l = (l - 128) * k + 128;
-      l = l < 0 ? 0 : l > 255 ? 255 : l;
-      p[i] = p[i + 1] = p[i + 2] = l;
-    }
-    x.putImageData(d, 0, 0);
-    return c;
+  function rowHTML(c) {
+    var st = STATUS[c.status] || ["st--rev", c.status];
+    var title = c.caption ? c.caption.replace(/\s+/g, " ").slice(0, 70) : (c.platform === "tiktok" ? "TikTok video" : "X post") + " " + c.videoId.slice(-6);
+    var who = c.author || c.handle;
+    var plat = c.platform === "tiktok" ? "TikTok" : "X";
+    var noteCls = c.status === "live" ? "warn" : c.status === "processing" ? "" : "bad";
+    var counted = c.status === "live";
+    return '<div class="tr' + (S.fresh[c.id] ? " is-new" : "") + '" data-id="' + c.id + '">' +
+      '<span class="tc"><span class="pfbig ' + c.platform + '">' + icon(c.platform === "tiktok" ? "tiktok" : "xlogo") + '</span><span><b>' + esc(title) + '</b><em>' + plat + (who ? " · @" + esc(who) : "") + " · " + ago(c.createdAt) + '</em></span></span>' +
+      '<span class="num">' + (c.status === "processing" ? "…" : nf.format(c.views || 0)) + "</span>" +
+      '<span class="num">' + (counted ? money(c.earned) : "—") + "</span>" +
+      '<span class="stcell"><i class="st ' + st[0] + '">' + st[1] + "</i>" + (c.status === "live" || c.status === "review" ? '<button class="ib" data-refresh="' + c.id + '" title="Refresh views" aria-label="Refresh views">' + icon("loop") + "</button>" : "") + '<a class="ib" href="' + esc(c.url) + '" target="_blank" rel="noopener" title="Open post" aria-label="Open post">' + icon("ext") + "</a></span>" +
+      (c.note ? '<p class="note ' + noteCls + '">' + esc(c.note) + "</p>" : "") +
+      "</div>";
   }
-
-  function aspect(it) {
-    if (it.type === "glasses") return G_H / G_W;
-    if (it.type === "joint") return jointImg.naturalWidth ? jointImg.naturalHeight / jointImg.naturalWidth : 0.68;
-    // caption: measure at a reference size
-    ctx.save();
-    ctx.font = "700 100px " + CAPTION_FONT;
-    var m = ctx.measureText(CAPTION).width || 420;
-    ctx.restore();
-    return 118 / m;
-  }
-  function dims(it) { return { w: it.w, h: it.w * aspect(it) }; }
-
-  // which side the rotate knob sits on: -1 above (default), +1 below if above is off-canvas
-  function knobSide(it) {
-    if (drag && drag.mode === "rotate" && drag.it === it) return drag.side;
-    var d = dims(it), k = 1 / view.scale;
-    var off = d.h / 2 + 6 * k + ROT_GAP * k;
-    var kx = it.x + Math.sin(it.rot) * off, ky = it.y - Math.cos(it.rot) * off;
-    var m = 10 * k;
-    return (kx < m || ky < m || kx > S.W - m || ky > S.H - m) ? 1 : -1;
-  }
-
-  function label(t) { return t === "glasses" ? "Shades" : t === "joint" ? "Joint" : "Caption"; }
-
-  /* ---------- drawing ---------- */
-  function drawItem(c, it, forExport) {
-    var d = dims(it);
-    c.save();
-    c.translate(it.x, it.y);
-    c.rotate(it.rot);
-    if (it.flip) c.scale(-1, 1);
-    if (it.type === "glasses") {
-      var s = d.w / G_W;
-      c.translate(-d.w / 2, -d.h / 2);
-      c.scale(s, s);
-      c.fillStyle = "#fff"; c.fill(gWhite);
-      c.fillStyle = "#000"; c.fill(gBlack);
-    } else if (it.type === "joint") {
-      var src = S.bw && jointGray ? jointGray : jointImg;
-      if (jointImg.complete && jointImg.naturalWidth) c.drawImage(src, -d.w / 2, -d.h / 2, d.w, d.h);
-    } else {
-      var fs = d.h / 1.18;
-      c.font = "700 " + fs + "px " + CAPTION_FONT;
-      c.textAlign = "center";
-      c.textBaseline = "middle";
-      c.lineJoin = "round";
-      c.lineWidth = fs * 0.07;
-      c.strokeStyle = "rgba(0,0,0,.85)";
-      c.strokeText(CAPTION, 0, fs * 0.04);
-      c.fillStyle = "#fff";
-      c.fillText(CAPTION, 0, fs * 0.04);
-    }
-    c.restore();
-  }
-
-  function drawScene(c, forExport) {
-    c.fillStyle = "#111";
-    c.fillRect(0, 0, S.W, S.H);
-    var src = S.bw ? S.photoGray : S.photo;
-    if (src) c.drawImage(src, 0, 0, S.W, S.H);
-    S.items.forEach(function (it) { drawItem(c, it, forExport); });
-  }
-
-  function drawSelection(c) {
-    var it = S.items[S.sel];
-    if (!it) return;
-    var d = dims(it);
-    var k = 1 / view.scale; // CSS px -> image px
-    c.save();
-    c.translate(it.x, it.y);
-    c.rotate(it.rot);
-    var pad = 6 * k;
-    var hw = d.w / 2 + pad, hh = d.h / 2 + pad;
-    c.lineWidth = 1.5 * k;
-    c.strokeStyle = "#fff";
-    c.setLineDash([6 * k, 5 * k]);
-    c.strokeRect(-hw, -hh, hw * 2, hh * 2);
-    c.setLineDash([]);
-    // stem + rotate knob
-    var ks = knobSide(it);
-    c.beginPath();
-    c.moveTo(0, ks * hh);
-    c.lineTo(0, ks * (hh + ROT_GAP * k));
-    c.stroke();
-    c.beginPath();
-    c.arc(0, ks * (hh + ROT_GAP * k), 7 * k, 0, Math.PI * 2);
-    c.fillStyle = "#fff"; c.fill();
-    c.lineWidth = 1.5 * k; c.strokeStyle = "#000"; c.stroke();
-    // corner scale handles
-    var hs = HANDLE * k * 0.75;
-    [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].forEach(function (p) {
-      c.fillStyle = "#fff";
-      c.fillRect(p[0] - hs, p[1] - hs, hs * 2, hs * 2);
-      c.strokeStyle = "#000";
-      c.strokeRect(p[0] - hs, p[1] - hs, hs * 2, hs * 2);
+  function paintRows() {
+    var q = ($("#search").value || "").toLowerCase().trim();
+    var list = S.claims.filter(function (c) {
+      if (q && ((c.caption || "") + " " + c.url + " " + (c.author || "")).toLowerCase().indexOf(q) < 0) return false;
+      return S.filter === "all" || (S.filter === "live" ? c.status === "live" : c.status === "processing" || c.status === "review");
     });
-    c.restore();
+    $("#rows").innerHTML = list.map(rowHTML).join("");
+    $("#empty").hidden = S.claims.length > 0;
+    S.fresh = {};
   }
+  $("#seg").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    S.filter = b.dataset.f;
+    $$("#seg button").forEach(function (x) { x.classList.toggle("is-on", x === b); });
+    paintRows();
+  });
 
-  var rafPending = false;
-  function render() {
-    if (rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(function () {
-      rafPending = false;
-      if (!S.photo) return;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      var k = view.scale * view.dpr;
-      ctx.setTransform(k, 0, 0, k, 0, 0);
-      ctx.imageSmoothingQuality = "high";
-      drawScene(ctx, false);
-      drawSelection(ctx);
+  /* ---------- data ---------- */
+  function load() {
+    return api("/api/claims").then(function (r) {
+      S.claims = r.claims; S.totals = r.totals; S.rate = r.rate || S.rate;
+      paintRows(); paintTotals();
+      S.claims.filter(function (c) { return c.status === "processing"; }).forEach(function (c) { process(c.id); });
     });
   }
-
-  /* ---------- layout ---------- */
-  function fit() {
-    if (!S.photo) return;
-    var r = stageEl.getBoundingClientRect();
-    var pad = window.innerWidth < 700 ? 16 : 40;
-    var availW = Math.max(120, r.width - pad * 2);
-    var availH = Math.max(120, r.height - pad * 2 - 18);
-    var sc = Math.min(availW / S.W, availH / S.H);
-    view.scale = sc;
-    view.cssW = Math.round(S.W * sc);
-    view.cssH = Math.round(S.H * sc);
-    view.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    canvas.style.width = view.cssW + "px";
-    canvas.style.height = view.cssH + "px";
-    canvas.width = Math.round(view.cssW * view.dpr);
-    canvas.height = Math.round(view.cssH * view.dpr);
-    render();
+  var inflight = {};
+  function process(id, force) {
+    if (inflight[id]) return; inflight[id] = 1;
+    api("/api/claims/process", { id: id, force: !!force }).then(function (r) {
+      var c = r.claim, i = S.claims.findIndex(function (x) { return x.id === id; });
+      if (i > -1) S.claims[i] = c;
+      var msg = c.status === "live" ? "Verified: " + nf.format(c.views) + " views = " + money(c.earned) : c.note || "";
+      if (c.status === "live") toast("Clip verified: " + nf.format(c.views) + " views = " + money(c.earned));
+      else if (c.status === "not_yours") toast("That clip isn't from your linked account.");
+      if (/Fetching/.test(cMsg.textContent)) { cMsg.textContent = msg; cMsg.className = "claimbox__msg " + (c.status === "live" ? "ok" : "err"); }
+      return load();
+    }).catch(function (e) { toast(e.message || "Couldn't check that clip right now."); })
+      .then(function () { delete inflight[id]; });
   }
-  window.addEventListener("resize", fit);
-
-  /* ---------- loading a photo ---------- */
-  function loadFile(file) {
-    if (!file || !/^image\//.test(file.type)) { window.thugToast && window.thugToast("That's not an image."); return; }
-    var url = URL.createObjectURL(file);
-    var img = new Image();
-    img.onload = function () {
-      var w = img.naturalWidth, h = img.naturalHeight;
-      var s = Math.min(1, MAX_SIDE / Math.max(w, h));
-      w = Math.round(w * s); h = Math.round(h * s);
-      var c = document.createElement("canvas");
-      c.width = w; c.height = h;
-      c.getContext("2d").drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      var first = !S.photo;
-      var prevW = S.W;
-      S.photo = c;
-      S.photoGray = toGray(c, w, h, 1.18);
-      S.W = w; S.H = h;
-      if (first || !S.items.length) {
-        defaultLayout();
-      } else if (prevW) {
-        // keep the user's layout proportionally when swapping photos
-        var r = w / prevW;
-        S.items.forEach(function (it) { it.x *= r; it.y *= r; it.w *= r; });
-      }
-      stageEl.classList.add("has-image");
-      exportBtn.disabled = false;
-      fit();
-      syncPanel();
-    };
-    img.onerror = function () { URL.revokeObjectURL(url); window.thugToast && window.thugToast("Couldn't read that image."); };
-    img.src = url;
-  }
-
-  function defaultLayout() {
-    var W = S.W, H = S.H, m = Math.min(W, H);
-    S.items = [
-      { type: "glasses", x: W * 0.5, y: H * 0.36, w: Math.min(W * 0.62, m * 0.8), rot: 0, flip: false },
-      { type: "joint", x: W * 0.6, y: H * 0.58, w: m * 0.26, rot: 0, flip: false },
-      { type: "text", x: W * 0.5, y: H * 0.86, w: Math.min(W * 0.7, m * 0.9), rot: 0, flip: false }
-    ];
-    S.sel = 0;
-  }
-
-  fileInput.addEventListener("change", function () {
-    if (fileInput.files && fileInput.files[0]) loadFile(fileInput.files[0]);
-    fileInput.value = "";
+  $("#rows").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-refresh]"); if (!b) return;
+    b.disabled = true; b.querySelector(".i").style.animation = "spin .8s linear infinite";
+    process(b.dataset.refresh, true);
   });
 
-  ["dragenter", "dragover"].forEach(function (ev) {
-    stageEl.addEventListener(ev, function (e) { e.preventDefault(); stageEl.classList.add("is-over"); });
+  /* ---------- claim form ---------- */
+  var cIn = $("#claimIn"), cPf = $("#claimPf"), cMsg = $("#claimMsg");
+  function platformOf(v) { return /tiktok\.com/i.test(v) ? "tiktok" : /(^|\/\/|\.)(x|twitter)\.com/i.test(v) ? "x" : ""; }
+  cIn.addEventListener("input", function () {
+    var p = platformOf(cIn.value);
+    cPf.className = "claimbar__pf " + p;
+    cPf.innerHTML = icon(p === "tiktok" ? "tiktok" : p === "x" ? "xlogo" : "link");
+    cMsg.textContent = ""; cMsg.className = "claimbox__msg";
   });
-  ["dragleave", "drop"].forEach(function (ev) {
-    stageEl.addEventListener(ev, function (e) { e.preventDefault(); stageEl.classList.remove("is-over"); });
-  });
-  stageEl.addEventListener("drop", function (e) {
-    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) loadFile(f);
-  });
-  window.addEventListener("paste", function (e) {
-    var items = (e.clipboardData && e.clipboardData.items) || [];
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") === 0) {
-        loadFile(items[i].getAsFile());
-        document.getElementById("studio").scrollIntoView({ behavior: "smooth" });
-        break;
-      }
-    }
-  });
-
-  /* ---------- hit testing ---------- */
-  function toLocal(it, px, py) {
-    var dx = px - it.x, dy = py - it.y;
-    var c = Math.cos(-it.rot), s = Math.sin(-it.rot);
-    return { x: dx * c - dy * s, y: dx * s + dy * c };
-  }
-
-  function hitHandle(px, py) {
-    var it = S.items[S.sel];
-    if (!it) return null;
-    var d = dims(it), k = 1 / view.scale;
-    var l = toLocal(it, px, py);
-    var pad = 6 * k;
-    var hw = d.w / 2 + pad, hh = d.h / 2 + pad;
-    var tol = HANDLE * 1.6 * k;
-    var ks = knobSide(it);
-    if (Math.abs(l.x) < tol && Math.abs(l.y - ks * (hh + ROT_GAP * k)) < tol) return "rotate";
-    var corners = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]];
-    for (var i = 0; i < 4; i++) {
-      if (Math.abs(l.x - corners[i][0]) < tol && Math.abs(l.y - corners[i][1]) < tol) return "scale";
-    }
-    return null;
-  }
-
-  function hitItem(px, py) {
-    for (var i = S.items.length - 1; i >= 0; i--) {
-      var it = S.items[i], d = dims(it);
-      var l = toLocal(it, px, py);
-      var slack = 6 / view.scale;
-      if (Math.abs(l.x) <= d.w / 2 + slack && Math.abs(l.y) <= d.h / 2 + slack) return i;
-    }
-    return -1;
-  }
-
-  function pointerPos(e) {
-    var r = canvas.getBoundingClientRect();
-    return { x: (e.clientX - r.left) / view.scale, y: (e.clientY - r.top) / view.scale };
-  }
-
-  /* ---------- pointer interaction ---------- */
-  var drag = null;
-  var pointers = new Map();
-
-  canvas.addEventListener("pointerdown", function (e) {
-    if (!S.photo) return;
-    canvas.setPointerCapture(e.pointerId);
-    var p = pointerPos(e);
-    pointers.set(e.pointerId, p);
-
-    // two-finger pinch / rotate on touch
-    if (pointers.size === 2 && S.items[S.sel]) {
-      var pts = Array.from(pointers.values());
-      var it0 = S.items[S.sel];
-      drag = {
-        mode: "pinch", it: it0, w0: it0.w, r0: it0.rot,
-        d0: Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y),
-        a0: Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x)
-      };
-      return;
-    }
-
-    var h = hitHandle(p.x, p.y);
-    if (h) {
-      var it = S.items[S.sel];
-      drag = { mode: h, it: it, p0: p, w0: it.w, r0: it.rot, side: knobSide(it),
-        dist0: Math.hypot(p.x - it.x, p.y - it.y) };
-      return;
-    }
-    var i = hitItem(p.x, p.y);
-    if (i >= 0) {
-      S.sel = i;
-      var it2 = S.items[i];
-      drag = { mode: "move", it: it2, ox: p.x - it2.x, oy: p.y - it2.y };
-      canvas.style.cursor = "grabbing";
-    } else {
-      S.sel = -1;
-      drag = null;
-    }
-    syncPanel();
-    render();
-  });
-
-  canvas.addEventListener("pointermove", function (e) {
-    if (!S.photo) return;
-    var p = pointerPos(e);
-    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, p);
-
-    if (!drag) {
-      // hover cursor
-      var h = hitHandle(p.x, p.y);
-      canvas.style.cursor = h === "rotate" ? "grab" : h === "scale" ? "nwse-resize" : hitItem(p.x, p.y) >= 0 ? "move" : "default";
-      return;
-    }
-    var it = drag.it;
-    if (drag.mode === "move") {
-      it.x = p.x - drag.ox;
-      it.y = p.y - drag.oy;
-    } else if (drag.mode === "scale") {
-      var dist = Math.hypot(p.x - it.x, p.y - it.y);
-      it.w = clampW(drag.w0 * dist / Math.max(1, drag.dist0));
-    } else if (drag.mode === "rotate") {
-      var a = Math.atan2(p.y - it.y, p.x - it.x) + (drag.side > 0 ? -Math.PI / 2 : Math.PI / 2);
-      if (e.shiftKey) a = Math.round(a / (Math.PI / 12)) * (Math.PI / 12);
-      it.rot = normAngle(a);
-    } else if (drag.mode === "pinch" && pointers.size >= 2) {
-      var pts = Array.from(pointers.values());
-      var d = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-      var ang = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
-      it.w = clampW(drag.w0 * d / Math.max(1, drag.d0));
-      it.rot = normAngle(drag.r0 + ang - drag.a0);
-    }
-    syncPanel(true);
-    render();
-  });
-
-  function endPointer(e) {
-    pointers.delete(e.pointerId);
-    if (drag && drag.mode === "pinch" && pointers.size === 1) { drag = null; return; }
-    if (pointers.size === 0) drag = null;
-    canvas.style.cursor = "default";
-  }
-  canvas.addEventListener("pointerup", endPointer);
-  canvas.addEventListener("pointercancel", endPointer);
-
-  canvas.addEventListener("wheel", function (e) {
-    var it = S.items[S.sel];
-    if (!it) return;
-    var p = pointerPos(e);
-    if (hitItem(p.x, p.y) !== S.sel) return;
+  $("#claimForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    it.w = clampW(it.w * Math.exp(-e.deltaY * 0.0015));
-    syncPanel(true);
-    render();
-  }, { passive: false });
-
-  function clampW(w) { return Math.max(Math.min(S.W, S.H) * 0.02, Math.min(w, Math.max(S.W, S.H) * 2)); }
-  function normAngle(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
-
-  /* ---------- keyboard ---------- */
-  window.addEventListener("keydown", function (e) {
-    var it = S.items[S.sel];
-    if (!it || !S.photo) return;
-    var tag = (document.activeElement && document.activeElement.tagName) || "";
-    if (/INPUT|TEXTAREA|SELECT/.test(tag) && document.activeElement.type !== "range") return;
-    var r = stageEl.getBoundingClientRect();
-    if (r.bottom < 0 || r.top > window.innerHeight) return;
-    var step = (e.shiftKey ? 10 : 1) / view.scale;
-    var used = true;
-    switch (e.key) {
-      case "ArrowLeft": it.x -= step; break;
-      case "ArrowRight": it.x += step; break;
-      case "ArrowUp": it.y -= step; break;
-      case "ArrowDown": it.y += step; break;
-      case "Delete": case "Backspace": removeSel(); break;
-      case "[": it.rot = normAngle(it.rot - Math.PI / 90); break;
-      case "]": it.rot = normAngle(it.rot + Math.PI / 90); break;
-      default: used = false;
-    }
-    if (used && document.activeElement.type !== "range") { e.preventDefault(); syncPanel(true); render(); }
+    var url = cIn.value.trim(), btn = $("#claimGo");
+    if (!url) { cMsg.textContent = "Paste a link first."; cMsg.className = "claimbox__msg err"; return; }
+    btn.disabled = true; cMsg.textContent = "Submitting…"; cMsg.className = "claimbox__msg";
+    api("/api/claims", { url: url }).then(function (r) {
+      if (r.existing) { cMsg.textContent = "You already claimed this one. It's in your list."; cMsg.className = "claimbox__msg ok"; return; }
+      S.fresh[r.claim.id] = 1;
+      S.claims.unshift(r.claim); paintRows();
+      cIn.value = ""; cIn.dispatchEvent(new Event("input"));
+      cMsg.textContent = "Got it. Fetching the views…"; cMsg.className = "claimbox__msg ok";
+      document.getElementById("clips").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      process(r.claim.id);
+    }).catch(function (e) {
+      cMsg.textContent = e.message || "Couldn't claim that link."; cMsg.className = "claimbox__msg err";
+    }).then(function () { btn.disabled = false; });
   });
 
-  /* ---------- panel ---------- */
-  function syncPanel(fromCanvas) {
-    var it = S.items[S.sel];
-    selGroup.classList.toggle("is-empty", !it);
-    selName.textContent = it ? label(it.type) : "—";
-    if (!it) return;
-    var pct = it.w / S.W * 100;
-    sizeRange.value = pct.toFixed(1);
-    rotRange.value = Math.round(it.rot * 180 / Math.PI);
-  }
+  $("#search").addEventListener("input", paintRows);
 
-  sizeRange.addEventListener("input", function () {
-    var it = S.items[S.sel]; if (!it) return;
-    it.w = clampW(parseFloat(sizeRange.value) / 100 * S.W);
-    render();
-  });
-  rotRange.addEventListener("input", function () {
-    var it = S.items[S.sel]; if (!it) return;
-    it.rot = parseFloat(rotRange.value) * Math.PI / 180;
-    render();
-  });
-  flipBtn.addEventListener("click", function () {
-    var it = S.items[S.sel]; if (!it) return;
-    it.flip = !it.flip; render();
-  });
-  frontBtn.addEventListener("click", function () {
-    var it = S.items[S.sel]; if (!it) return;
-    S.items.splice(S.sel, 1); S.items.push(it); S.sel = S.items.length - 1; render();
-  });
-  function removeSel() {
-    if (S.sel < 0) return;
-    S.items.splice(S.sel, 1);
-    S.sel = -1;
-    syncPanel(); render();
-  }
-  delBtn.addEventListener("click", removeSel);
+  /* ---------- misc ---------- */
+  $("#claimBtn").addEventListener("click", function () { toast("Rewards are paid in SOL to " + S.wallet.slice(0, 4) + "…" + S.wallet.slice(-4) + "."); });
+  $("#signOut").addEventListener("click", function () { api("/api/auth/logout", {}).then(function () { location.href = "start.html"; }); });
 
-  document.querySelectorAll("[data-add]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      if (!S.photo) { fileInput.click(); return; }
-      var type = b.getAttribute("data-add");
-      var m = Math.min(S.W, S.H);
-      var off = (S.items.length % 5) * m * 0.03;
-      var w = type === "glasses" ? m * 0.55 : type === "joint" ? m * 0.26 : m * 0.8;
-      S.items.push({ type: type, x: S.W / 2 + off, y: S.H / 2 + off, w: w, rot: 0, flip: false });
-      S.sel = S.items.length - 1;
-      syncPanel(); render();
-    });
+  var hr = new Date().getHours();
+  $("#greet").textContent = hr < 5 ? "Late night" : hr < 12 ? "Morning" : hr < 18 ? "Afternoon" : "Evening";
+  var launch = new Date(2026, 10, 19), now = new Date(); now.setHours(0, 0, 0, 0);
+  var d = Math.round((now - launch) / 864e5);
+  $("#day").textContent = d < 0 ? "GTA VI in " + -d + " days" : "GTA VI · Day " + (d + 1);
+  document.querySelectorAll("canvas[data-still]").forEach(function (c) { VF.scenes.still(c, c.dataset.still, +c.dataset.t || 0); });
+
+  /* ---------- boot ---------- */
+  api("/api/me").then(function (r) {
+    if (!r.wallet) { location.replace("start.html"); return; }
+    if (!r.user) { location.replace("start.html"); return; }
+    S.wallet = r.wallet; S.user = r.user; S.rate = r.rate;
+    paintProfile();
+    return load();
+  }).catch(function (e) {
+    toast(e.message || "Couldn't load your studio.");
   });
-
-  bwToggle.addEventListener("change", function () { S.bw = bwToggle.checked; render(); });
-
-  resetBtn.addEventListener("click", function () {
-    if (!S.photo) return;
-    defaultLayout();
-    syncPanel(); render();
-  });
-
-  /* ---------- export ---------- */
-  exportBtn.addEventListener("click", function () {
-    if (!S.photo) return;
-    var out = document.createElement("canvas");
-    out.width = S.W; out.height = S.H;
-    var c = out.getContext("2d");
-    c.imageSmoothingQuality = "high";
-    drawScene(c, true);
-    var done = function (blob) {
-      if (!blob) { window.thugToast && window.thugToast("Export failed. Try another photo."); return; }
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "thug-life.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-      window.thugToast && window.thugToast("Exported. Deal with it.");
-    };
-    if (out.toBlob) out.toBlob(done, "image/png");
-    else {
-      try {
-        var bin = atob(out.toDataURL("image/png").split(",")[1]);
-        var arr = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-        done(new Blob([arr], { type: "image/png" }));
-      } catch (err) { done(null); }
-    }
-  });
-
-  // make sure the caption font is ready before the first draw that needs it
-  if (document.fonts) document.fonts.load('700 100px "UnifrakturCook"').then(render, function () {});
-  syncPanel();
+  // keep processing claims moving and views fresh while the tab is open
+  setInterval(function () { if (!document.hidden && S.user) load(); }, 60000);
 })();

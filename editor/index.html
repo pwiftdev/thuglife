@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self'; media-src blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta
+      name="description"
+      content="VICEFEED Studio: cut, brand and export GTA 6 clips on your device."
+    />
+    <title>Studio editor · VICEFEED</title>
+    <link rel="icon" href="../assets/favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,600..900&family=Geist:wght@400..800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="identity">
+        <a class="back" href="../studio.html" title="Back to your studio" aria-label="Back to your studio"
+          ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg
+        ></a>
+        <a class="vf-logo" href="../studio.html" aria-label="VICEFEED studio"
+          ><img src="../assets/icon-256.png" alt="" /><img
+            class="vf-word"
+            src="../assets/wordmark-sm.png"
+            alt="VICEFEED"
+        /></a>
+        <div class="title">
+          <h1>Studio</h1>
+          <p id="save-status" role="status">Saved on this device</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button id="undo" type="button" title="Undo (Ctrl or Command + Z)">
+          Undo
+        </button>
+        <button
+          id="redo"
+          type="button"
+          title="Redo (Ctrl or Command + Shift + Z)"
+        >
+          Redo
+        </button>
+        <span id="brand-check" class="brand-check">Watermark on</span>
+        <button id="export-open" type="button" class="primary">Export</button>
+      </div>
+    </header>
+    <p id="notice" class="notice" role="status" hidden></p>
+    <main class="workspace">
+      <section class="panel library" aria-labelledby="library-title">
+        <div class="panel-heading"><h2 id="library-title">Media</h2></div>
+        <div class="panel-body">
+          <div id="drop-zone" class="drop-zone">
+            <button id="import-video" type="button" class="primary">
+              Import video
+            </button>
+            <p>or drop video and audio here</p>
+          </div>
+          <div id="media-list" class="list"></div>
+          <button id="import-audio" type="button" class="full-width">
+            Import audio
+          </button>
+          <input
+            id="video-file"
+            type="file"
+            accept="video/mp4,video/webm,.mp4,.webm"
+            multiple
+            hidden
+          />
+          <input
+            id="audio-file"
+            type="file"
+            accept="audio/*,.webm,.mp4,.m4a,.wav,.ogg,.opus"
+            multiple
+            hidden
+          />
+          <input id="relink-file" type="file" hidden />
+
+          <section class="brandkit" aria-labelledby="brand-title">
+            <div class="brandkit-head">
+              <h2 id="brand-title">Brand kit</h2>
+              <label class="switch" title="VICEFEED watermark"
+                ><input id="brand-on" type="checkbox" checked /><span></span
+              ></label>
+            </div>
+            <p id="brand-note" class="brandkit-note">
+              The watermark is required to earn rewards.
+            </p>
+            <div id="brand-styles" class="brand-styles" role="radiogroup" aria-label="Watermark style">
+              <button type="button" data-style="badge" role="radio">
+                <span class="pv"><span class="wm"><img class="wm-icon" src="../assets/icon-256.png" alt="" /><span class="wm-txt"><img src="../assets/wordmark-sm.png" alt="" /><span class="hnd">@you</span></span></span></span>
+                <b>Badge</b>
+              </button>
+              <button type="button" data-style="handle" role="radio">
+                <span class="pv"><span class="wm"><img class="wm-icon" src="../assets/icon-256.png" alt="" /><span class="wm-txt"><span class="hnd hnd-b">@you</span><span class="on">on VICEFEED</span></span></span></span>
+                <b>Handle</b>
+              </button>
+              <button type="button" data-style="word" role="radio">
+                <span class="pv"><img class="pv-word" src="../assets/wordmark-sm.png" alt="" /></span>
+                <b>Wordmark</b>
+              </button>
+              <button type="button" data-style="icon" role="radio">
+                <span class="pv"><img class="pv-icon" src="../assets/icon-256.png" alt="" /></span>
+                <b>Corner bug</b>
+              </button>
+            </div>
+            <label class="bk-field"
+              ><span>Handle</span
+              ><input id="brand-handle" maxlength="31" placeholder="@yourname" spellcheck="false" autocomplete="off"
+            /></label>
+            <div class="bk-field">
+              <span>Position</span>
+              <div id="brand-pos" class="brand-pos" role="radiogroup" aria-label="Watermark position">
+                <button type="button" data-pos="tl" title="Top left" aria-label="Top left"></button>
+                <button type="button" data-pos="tc" title="Top center" aria-label="Top center"></button>
+                <button type="button" data-pos="tr" title="Top right" aria-label="Top right"></button>
+                <button type="button" data-pos="ml" title="Middle left" aria-label="Middle left"></button>
+                <button type="button" data-pos="bl" title="Lower left" aria-label="Lower left"></button>
+              </div>
+            </div>
+            <label class="bk-field"
+              ><span>Size <output id="brand-size-out">100%</output></span
+              ><input id="brand-size" type="range" min="0.5" max="2" step="0.05" value="1"
+            /></label>
+            <label class="bk-field"
+              ><span>Opacity <output id="brand-opacity-out">100%</output></span
+              ><input id="brand-opacity" type="range" min="0.3" max="1" step="0.05" value="1"
+            /></label>
+            <h3 class="bk-sub">Brand text</h3>
+            <div class="brand-texts">
+              <button type="button" data-preset="glossy"><span class="tx-glossy">VICE CITY</span></button>
+              <button type="button" data-preset="hook"><span class="tx-hook">WAIT FOR IT</span></button>
+              <button type="button" data-preset="box"><span class="tx-box">he really did that</span></button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel preview" aria-labelledby="preview-title">
+        <div class="panel-heading">
+          <h2 id="preview-title">Preview</h2>
+          <span id="frame-size" class="muted"></span>
+        </div>
+        <div id="stage" class="stage">
+          <canvas
+            id="preview-canvas"
+            width="1920"
+            height="1080"
+            aria-label="Output video preview"
+          ></canvas>
+          <div id="preview-empty" class="preview-empty">
+            <strong>Drop a recording to start</strong
+            ><span>Your media stays on this device.</span>
+          </div>
+        </div>
+        <div class="transport">
+          <button
+            id="step-back"
+            type="button"
+            title="Previous source frame"
+            aria-label="Previous source frame"
+          >
+            −1 frame
+          </button>
+          <button id="play" type="button" class="play">Play</button>
+          <button
+            id="step-forward"
+            type="button"
+            title="Next source frame"
+            aria-label="Next source frame"
+          >
+            +1 frame
+          </button>
+          <output id="timecode" class="timecode">00:00.000 / 00:00.000</output>
+        </div>
+      </section>
+
+      <section class="panel inspector" aria-labelledby="inspector-title">
+        <div class="panel-heading">
+          <h2 id="inspector-title">Properties</h2>
+        </div>
+        <div class="panel-body">
+          <div id="frame-controls" class="field-grid"></div>
+          <div id="inspector-controls"></div>
+        </div>
+      </section>
+
+      <section class="panel timeline" aria-labelledby="timeline-title">
+        <div class="panel-heading timeline-heading">
+          <h2 id="timeline-title">Timeline</h2>
+          <div class="timeline-actions">
+            <button id="split" type="button" title="Split at playhead (S)">
+              Split
+            </button>
+            <button id="delete" type="button" title="Delete selected item">
+              Delete
+            </button>
+            <button id="earlier" type="button">Move earlier</button>
+            <button id="later" type="button">Move later</button>
+            <button id="add-text" type="button">Add text</button>
+            <details id="edit-menu" class="edit-menu">
+              <summary>Edit</summary>
+              <div class="edit-options">
+                <button id="cut" type="button">Cut</button>
+                <button id="copy" type="button">Copy</button>
+                <button id="paste" type="button">Paste at playhead</button>
+                <button id="duplicate" type="button">Duplicate</button>
+                <button id="detach" type="button">Detach source audio</button>
+                <button
+                  id="range-in"
+                  type="button"
+                  title="Mark export start (I)"
+                >
+                  Mark in
+                </button>
+                <button
+                  id="range-out"
+                  type="button"
+                  title="Mark export end (O)"
+                >
+                  Mark out
+                </button>
+                <button id="range-clear" type="button">
+                  Clear export range
+                </button>
+              </div>
+            </details>
+          </div>
+          <label class="zoom"
+            >Zoom
+            <input id="timeline-zoom" type="range" min="0" max="100" value="0"
+          /></label>
+        </div>
+        <div class="timeline-lanes">
+          <div class="lane-labels" aria-hidden="true">
+            <span></span><span>Video</span><span>Text</span><span>Audio</span>
+          </div>
+          <div id="tracks-scroll" class="tracks-scroll">
+            <div id="tracks" class="tracks">
+              <div id="ruler" class="ruler"></div>
+              <div id="video-lane" class="lane video-lane"></div>
+              <div id="text-lane" class="lane"></div>
+              <div id="audio-lane" class="lane"></div>
+              <div
+                id="range-band"
+                class="range-band"
+                aria-hidden="true"
+                hidden
+              ></div>
+              <div id="playhead" class="playhead"></div>
+            </div>
+          </div>
+        </div>
+        <div class="timeline-seek">
+          <label for="seek">Seek</label
+          ><input id="seek" type="range" min="0" max="0" value="0" step="any" />
+        </div>
+      </section>
+    </main>
+
+    <dialog id="export-dialog" aria-labelledby="export-title">
+      <div class="panel-heading">
+        <h2 id="export-title">Export video</h2>
+        <button id="export-close" type="button">Close</button>
+      </div>
+      <div class="export-body">
+        <div id="export-settings" class="field-grid"></div>
+        <p id="export-support" class="muted"></p>
+        <div id="export-progress" class="export-progress" hidden>
+          <progress id="progress" max="1" value="0"></progress>
+        </div>
+        <p id="export-status" role="status" hidden></p>
+        <a id="export-next" class="export-next" href="../studio.html#claim" hidden
+          ><b>Posted it?</b> Claim it in your studio to start earning →</a
+        >
+        <div class="export-actions">
+          <button id="export-cancel" type="button" hidden>Cancel export</button>
+          <button id="export-download" type="button">Download</button>
+          <button id="export-save" type="button" class="primary">
+            Save to file
+          </button>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>

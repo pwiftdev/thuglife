@@ -2,3 +2,7 @@
 .vercel
 .claude/
 node_modules/
+.data/
+dev.js
+README.md
+clip-editor/

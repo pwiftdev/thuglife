@@ -2,3 +2,5 @@
 .vercel
 .claude/
 node_modules/
+.data/
+.env*

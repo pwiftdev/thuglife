@@ -1,330 +1,209 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>$THUG — Thug Life</title>
-  <meta name="description" content="$THUG. The internet's oldest verdict, now on Solana. Put the glasses on.">
-  <meta name="theme-color" content="#0b0b0b">
-  <meta property="og:title" content="$THUG — Thug Life">
-  <meta property="og:description" content="The internet's oldest verdict, now on Solana. Put the glasses on.">
-  <meta property="og:image" content="assets/og.jpg">
+  <title>VICEFEED · Clip GTA 6. Get paid.</title>
+  <meta name="description" content="Post GTA 6 clips with the VICEFEED watermark and earn $VICEFEED creator rewards for every 1,000 views. Edit in the browser with VICEFEED Studio.">
+  <meta name="theme-color" content="#08050d">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <meta property="og:type" content="website">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="400">
+  <meta property="og:title" content="VICEFEED · Clip GTA 6. Get paid.">
+  <meta property="og:description" content="Post GTA 6 clips with the VICEFEED watermark. Earn per 1K views.">
+  <meta property="og:image" content="assets/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="$THUG — Thug Life">
-  <meta name="twitter:description" content="The internet's oldest verdict, now on Solana. Put the glasses on.">
   <meta name="twitter:image" content="assets/og.jpg">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=JetBrains+Mono:wght@400;500;700&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,600..900&family=Geist:wght@400..800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=2">
+  <link rel="stylesheet" href="css/landing.css?v=3">
 </head>
-<body>
-
-<div class="grain" aria-hidden="true"></div>
+<body class="landing">
 
 <header class="nav" id="nav">
-  <a class="nav__brand" href="#top" aria-label="$THUG home">
-    <span class="px-glasses nav__glasses" aria-hidden="true"></span>
-    <span class="nav__ticker">$THUG</span>
+  <a class="brand" href="./" aria-label="VICEFEED home">
+    <img class="brand__icon" src="assets/icon-256.png" alt="" width="256" height="268">
+    <img class="brand__word" src="assets/wordmark-sm.png" alt="VICEFEED" width="640" height="126">
   </a>
-  <nav class="nav__links" aria-label="Sections">
-    <a href="#lore">Lore</a>
-    <a href="#studio">Thug yourself</a>
-    <a href="#buy">Buy</a>
+  <nav class="nav__links">
+    <a href="#how">How it works</a>
+    <a href="#studio">Editor</a>
+    <a href="#rewards">Rewards</a>
   </nav>
   <div class="nav__cta">
-    <a class="btn btn--ghost btn--sm" href="https://x.com/i/communities/2039097758359945589" target="_blank" rel="noopener">
-      <svg class="ico-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      <span>Community</span>
-    </a>
-    <a class="btn btn--solid btn--sm" href="https://pump.fun/coin/9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump" target="_blank" rel="noopener">Buy $THUG</a>
+    <a class="ghost ghost--sm nav__login" href="start.html">Log in</a>
+    <a class="btn btn--sm" href="start.html">Start clipping</a>
   </div>
 </header>
 
-<main id="top">
-
-  <!-- ============ HERO ============ -->
-  <section class="hero" id="hero">
-    <div class="hero__meta">
-      <span class="mono tc" id="tc"><i class="tc__dot"></i><span class="tc__label">Rec</span><span class="tc__time">00:00:00:00</span></span>
-      <span class="mono hero__wanted" aria-label="Wanted level six stars">
-        Wanted
-        <span class="stars" id="heroStars">
-          <i></i><i></i><i></i><i></i><i></i><i></i>
-        </span>
-      </span>
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="sky" aria-hidden="true">
+      <div class="sky__grad"></div>
+      <div class="sky__sun"></div>
+      <svg class="sky__city" id="city" preserveAspectRatio="none"></svg>
+      <div class="sky__haze"></div>
+      <div class="sky__sea"><i></i></div>
+      <div class="bokeh" id="bokeh"></div>
+      <svg class="sky__palms sky__palms--l" id="palmsL" viewBox="0 0 600 900" preserveAspectRatio="xMinYMax meet"></svg>
+      <svg class="sky__palms sky__palms--r" id="palmsR" viewBox="0 0 600 900" preserveAspectRatio="xMaxYMax meet"></svg>
+      <div class="grain"></div>
     </div>
 
-    <div class="hero__stage" id="heroStage">
-      <i class="crop crop--tl" aria-hidden="true"></i><i class="crop crop--tr" aria-hidden="true"></i><i class="crop crop--bl" aria-hidden="true"></i><i class="crop crop--br" aria-hidden="true"></i>
-      <h1 class="hero__word" id="heroWord"><span>Thug</span> <span>life</span></h1>
-      <div class="hero__props">
-        <button class="hero__glasses" id="heroGlasses" type="button" aria-label="Drop the glasses again">
-          <span class="px-glasses" aria-hidden="true"></span>
-        </button>
-        <div class="hero__joint" id="heroJoint" aria-hidden="true">
-          <img src="assets/joint.png" alt="" width="357" height="243" draggable="false">
-          <span class="smoke"><i></i><i></i><i></i><i></i></span>
-        </div>
+    <div class="hero__copy">
+      <span class="chip hero__chip"><span class="dot dot--pink"></span><span id="day">GTA VI is out</span></span>
+      <h1 class="hero__mark"><img src="assets/wordmark.png" alt="VICEFEED" width="1600" height="315"></h1>
+      <p class="hero__line">Post GTA&nbsp;6 clips with our watermark. <br>Get paid for every 1K views.</p>
+      <div class="hero__cta">
+        <a class="btn btn--lg" href="start.html">Start clipping <i data-i="arrow"></i></a>
+        <a class="ghost hero__ghost" href="editor/"><i data-i="play" class="i--fill"></i> Open the editor</a>
       </div>
     </div>
 
-    <div class="hero__foot">
-      <p class="hero__lede">
-        The internet's oldest verdict.<br>
-        <em>Now it has a ticker.</em>
-      </p>
-
-      <div class="hero__actions">
-        <button class="ca" type="button" data-copy aria-label="Copy contract address">
-          <span class="ca__label mono">CA</span>
-          <span class="ca__value mono" data-ca>9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump</span>
-          <span class="ca__copy mono">Copy</span>
-        </button>
-        <div class="hero__btns">
-          <a class="btn btn--solid" href="https://pump.fun/coin/9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump" target="_blank" rel="noopener">Buy on pump.fun</a>
-          <a class="btn btn--ghost" href="#studio">Put the glasses on</a>
+    <div class="phones" aria-hidden="true">
+      <figure class="phone phone--l">
+        <div class="phone__scr">
+          <canvas data-scene="night" data-offset="3"></canvas>
+          <video class="phone__vid" data-slot="l" muted loop playsinline preload="none" aria-hidden="true"></video>
+          <div class="phone__wm"><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""></span></span><span class="phone__credit">clip · @formula</span></div>
+          <div class="phone__ui"><b>Clip by @formula</b><span>fighting cops in GTA 6 💀</span></div>
         </div>
+        <figcaption class="stat stat--l"><span class="stat__k">Views</span><b>1.24M</b></figcaption>
+      </figure>
+      <figure class="phone phone--c">
+        <div class="phone__scr">
+          <canvas data-scene="highway"></canvas>
+          <video class="phone__vid" data-slot="c" muted loop playsinline preload="none" aria-hidden="true"></video>
+          <div class="phone__wm"><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""></span></span><span class="phone__credit">clip · @hifi4_</span></div>
+          <div class="phone__ui"><b>Clip by @hifi4_</b><span>the crash physics are unreal</span></div>
+        </div>
+        <figcaption class="stat stat--c"><span class="stat__k">Earned</span><b class="sunset-text" id="earnTick">$612.50</b></figcaption>
+      </figure>
+      <figure class="phone phone--r">
+        <div class="phone__scr">
+          <canvas data-scene="beach" data-offset="6"></canvas>
+          <video class="phone__vid" data-slot="r" muted loop playsinline preload="none" aria-hidden="true"></video>
+          <div class="phone__wm"><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""></span></span><span class="phone__credit">clip · @therealjasonduval</span></div>
+          <div class="phone__ui"><b>Clip by @therealjasonduval</b><span>Lucia already caught Jason 😭</span></div>
+        </div>
+        <figcaption class="stat stat--r"><span class="stat__k">Per 1K</span><b>$0.50</b></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section class="sec how" id="how">
+    <header class="sec__head">
+      <p class="eyebrow">How it works</p>
+      <h2 class="display h2 glossy">Three steps.<br><span class="sunset-text">That's the whole thing.</span></h2>
+    </header>
+    <ol class="steps">
+      <li class="step reveal">
+        <div class="step__vis">
+          <div class="mini-profile">
+            <span class="mini-profile__av">LC</span>
+            <div><b>@leonida.clips</b><span>Clipper · Level 1</span></div>
+            <div class="mini-profile__pf">
+              <span class="pf pf--tiktok"><i data-i="tiktok"></i></span><span class="pf pf--youtube"><i data-i="youtube"></i></span><span class="pf pf--instagram"><i data-i="instagram"></i></span><span class="pf pf--x"><i data-i="xlogo"></i></span>
+            </div>
+            <span class="chip mini-profile__w"><span class="dot"></span>Wallet connected</span>
+          </div>
+        </div>
+        <span class="step__n">01</span>
+        <h3>Make your profile</h3>
+        <p>Link your pages and your Solana wallet. Takes a minute.</p>
+      </li>
+      <li class="step reveal">
+        <div class="step__vis">
+          <div class="mini-edit">
+            <div class="mini-edit__frame"><canvas data-scene="highway" data-offset="1.5"></canvas><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""></span></span></div>
+            <div class="mini-edit__tl"><i style="--w:70%;--c:var(--cyan)"></i><i style="--w:45%;--c:var(--pink);--x:20%"></i><i style="--w:88%;--c:var(--gold)"></i><em></em></div>
+          </div>
+        </div>
+        <span class="step__n">02</span>
+        <h3>Cut it in VICEFEED Studio</h3>
+        <p>Trim, caption and brand it in the browser. Watermark built in.</p>
+      </li>
+      <li class="step reveal">
+        <div class="step__vis">
+          <div class="mini-pay">
+            <span class="eyebrow">Claimable</span>
+            <b class="sunset-text">$142.50</b>
+            <svg viewBox="0 0 200 60" preserveAspectRatio="none"><defs><linearGradient id="spk" x1="0" x2="1"><stop offset="0" stop-color="#ff1589"/><stop offset="1" stop-color="#ffc65e"/></linearGradient><linearGradient id="spkf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff1589" stop-opacity=".35"/><stop offset="1" stop-color="#ff1589" stop-opacity="0"/></linearGradient></defs><path d="M0 52 L20 48 L40 50 L60 40 L80 42 L100 30 L120 33 L140 20 L160 22 L180 10 L200 6 L200 60 L0 60Z" fill="url(#spkf)"/><path d="M0 52 L20 48 L40 50 L60 40 L80 42 L100 30 L120 33 L140 20 L160 22 L180 10 L200 6" fill="none" stroke="url(#spk)" stroke-width="3" stroke-linejoin="round"/></svg>
+            <span class="chip"><i data-i="sol" class="i--fill"></i> Paid in SOL</span>
+          </div>
+        </div>
+        <span class="step__n">03</span>
+        <h3>Get paid per 1K views</h3>
+        <p>Every thousand views earns from the $VICEFEED reward pool.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- STUDIO -->
+  <section class="sec studio" id="studio">
+    <header class="sec__head sec__head--c">
+      <p class="eyebrow">VICEFEED Studio</p>
+      <h2 class="display h2 glossy">A real editor.<br><span class="sunset-text">Built for vertical.</span></h2>
+    </header>
+    <a class="studio__frame reveal" href="editor/" aria-label="Open VICEFEED Studio">
+      <div class="studio__bar"><i></i><i></i><i></i><span>vicefeed / editor</span></div>
+      <div class="studio__view" id="studioView"><img src="assets/editor-shot.jpg" alt="VICEFEED Studio editor with a GTA 6 clip and the VICEFEED watermark" loading="lazy" width="1440" height="900"></div>
+      <span class="studio__open btn">Open the editor <i data-i="arrow"></i></span>
+    </a>
+    <ul class="feats">
+      <li><i data-i="brand"></i><b>Brand kit</b><span>Watermark + glossy text, one click</span></li>
+      <li><i data-i="scissors"></i><b>Real editing</b><span>Trim, split, reorder, audio</span></li>
+      <li><i data-i="phone"></i><b>9:16 by default</b><span>Built for TikTok and X</span></li>
+      <li><i data-i="download"></i><b>On-device export</b><span>MP4, your files never upload</span></li>
+    </ul>
+  </section>
+
+  <!-- REWARDS -->
+  <section class="sec rewards" id="rewards">
+    <div class="rewards__card reveal">
+      <div class="rewards__glow" aria-hidden="true"></div>
+      <p class="eyebrow">Creator rewards</p>
+      <p class="rewards__num"><b>$0.50</b><span>per 1,000 views</span></p>
+      <div class="flow">
+        <span class="chip"><i data-i="trend"></i>$VICEFEED trades</span>
+        <i data-i="arrow" class="flow__arr"></i>
+        <span class="chip"><i data-i="coins"></i>Reward pool</span>
+        <i data-i="arrow" class="flow__arr"></i>
+        <span class="chip chip--hot"><i data-i="user"></i>Clippers</span>
+      </div>
+      <div class="ca">
+        <span class="ca__k">CA</span>
+        <code id="ca">Dropping soon</code>
+        <button class="ib" id="caCopy" aria-label="Copy contract address" disabled><i data-i="copy"></i></button>
       </div>
     </div>
   </section>
 
-  <!-- ============ MARQUEE ============ -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee__track">
-      <span>Thug life</span><b></b><span class="sans">$THUG</span><b></b><span>Deal with it</span><b></b><span class="sans">Six stars</span><b></b><span>Thug life</span><b></b><span class="sans">Solana</span><b></b>
-      <span>Thug life</span><b></b><span class="sans">$THUG</span><b></b><span>Deal with it</span><b></b><span class="sans">Six stars</span><b></b><span>Thug life</span><b></b><span class="sans">Solana</span><b></b>
-    </div>
-  </div>
-
-  <!-- ============ LORE ============ -->
-  <section class="lore" id="lore">
-    <div class="wrap">
-      <div class="section-label mono"><span>Chapter I</span><span>The verdict</span></div>
-
-      <h2 class="display reveal">
-        Since 2014 the internet has had exactly one way to say
-        <span class="bl">you just won.</span>
-      </h2>
-
-      <div class="lore__grid">
-        <p class="lore__intro reveal">
-          Someone lands the comeback. The frame freezes. Colour drains out.
-          Eight-bit shades drop from the sky, a joint finds its way into the shot,
-          and the bass hits. No caption needed. Thug Life is older than most coins
-          and louder than all of them.
-        </p>
-
-        <ol class="beats">
-          <li class="beat reveal">
-            <span class="beat__n mono">01</span>
-            <h3>The move</h3>
-            <p>A clap-back, a buzzer beater, a perfectly timed no. Something that deserved an audience.</p>
-          </li>
-          <li class="beat reveal">
-            <span class="beat__n mono">02</span>
-            <h3>The freeze</h3>
-            <p>Hard cut. Black and white. The whole timeline holds its breath for one frame.</p>
-          </li>
-          <li class="beat reveal">
-            <span class="beat__n mono">03</span>
-            <h3>The glasses</h3>
-            <p>The shades descend. Joint lit. Case closed. That moment is <strong>$THUG</strong>.</p>
-          </li>
-        </ol>
-      </div>
-    </div>
-
-    <div class="wrap vice">
-      <div class="section-label mono"><span>Chapter II</span><span>Vice is calling</span></div>
-      <div class="vice__grid">
-        <div class="vice__meter reveal" aria-hidden="true">
-          <div class="vice__stars stars stars--big" id="viceStars"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <span class="mono vice__caption">Wanted level: maximum</span>
-        </div>
-        <div>
-          <h2 class="display display--sm reveal">
-            The biggest crime story ever told is about to drop.
-            The internet already picked the <span class="bl">soundtrack.</span>
-          </h2>
-          <p class="vice__body reveal">
-            GTA VI is the most anticipated release in gaming history. Heists, getaways,
-            six-star chases, and millions of clips about to hit every feed on earth.
-            Every stunt, every escape, every ridiculous win ends the same way:
-            freeze frame, black and white, glasses down.
-            <strong>$THUG is the coin for that moment.</strong>
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ STUDIO ============ -->
-  <section class="studio" id="studio">
-    <div class="wrap">
-      <div class="section-label mono"><span>Chapter III</span><span>Thug yourself</span></div>
-      <div class="studio__head">
-        <h2 class="display reveal">Put the <span class="bl">glasses</span> on.</h2>
-        <p class="studio__sub reveal">
-          Upload any photo. Drag, resize and rotate the shades and the joint, then export.
-          Everything happens in your browser; your photo never leaves your device.
-        </p>
-      </div>
-
-      <div class="studio__body">
-        <div class="stage" id="stage">
-          <canvas id="studioCanvas" aria-label="Meme editor canvas"></canvas>
-          <label class="drop" id="drop" for="fileInput">
-            <span class="drop__glasses px-glasses" aria-hidden="true"></span>
-            <span class="drop__title">Drop a photo</span>
-            <span class="drop__hint mono">or click to upload &nbsp;·&nbsp; paste works too</span>
-          </label>
-          <input type="file" id="fileInput" accept="image/*" hidden>
-          <div class="stage__hint mono" id="stageHint">Drag to move &nbsp;·&nbsp; corner to resize &nbsp;·&nbsp; top knob to rotate</div>
-        </div>
-
-        <aside class="panel" aria-label="Editor controls">
-          <div class="panel__group">
-            <span class="panel__label mono">Photo</span>
-            <div class="panel__row">
-              <label class="btn btn--ghost btn--block" for="fileInput">Upload photo</label>
-            </div>
-          </div>
-
-          <div class="panel__group">
-            <span class="panel__label mono">Add</span>
-            <div class="panel__row panel__row--3">
-              <button class="chip" type="button" data-add="glasses">
-                <span class="px-glasses chip__ico" aria-hidden="true"></span>Shades
-              </button>
-              <button class="chip" type="button" data-add="joint">
-                <img class="chip__ico chip__ico--joint" src="assets/joint.png" alt="" aria-hidden="true">Joint
-              </button>
-              <button class="chip" type="button" data-add="text">
-                <span class="chip__ico chip__ico--bl" aria-hidden="true">T</span>Caption
-              </button>
-            </div>
-          </div>
-
-          <div class="panel__group" id="selGroup">
-            <span class="panel__label mono">Selected <em id="selName">—</em></span>
-            <label class="slider">
-              <span class="mono">Size</span>
-              <input type="range" id="sizeRange" min="2" max="200" step="0.5" value="40">
-            </label>
-            <label class="slider">
-              <span class="mono">Rotate</span>
-              <input type="range" id="rotRange" min="-180" max="180" step="1" value="0">
-            </label>
-            <div class="panel__row panel__row--3">
-              <button class="chip" type="button" id="flipBtn">Flip</button>
-              <button class="chip" type="button" id="frontBtn">To front</button>
-              <button class="chip" type="button" id="delBtn">Remove</button>
-            </div>
-          </div>
-
-          <div class="panel__group">
-            <span class="panel__label mono">Look</span>
-            <label class="toggle">
-              <input type="checkbox" id="bwToggle" checked>
-              <span class="toggle__track"><span></span></span>
-              <span>Black &amp; white</span>
-            </label>
-          </div>
-
-          <div class="panel__group panel__group--end">
-            <button class="btn btn--solid btn--block" type="button" id="exportBtn" disabled>Export PNG</button>
-            <button class="btn btn--text btn--block" type="button" id="resetBtn">Reset</button>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ BUY ============ -->
-  <section class="buy" id="buy">
-    <div class="wrap">
-      <div class="section-label mono"><span>Chapter IV</span><span>The come-up</span></div>
-      <h2 class="display reveal">Join the <span class="bl">life.</span></h2>
-
-      <ol class="steps">
-        <li class="step reveal">
-          <span class="mono step__n">01</span>
-          <h3>Get a wallet</h3>
-          <p>Download Phantom or Solflare. Write the seed phrase down. Tell nobody. Thugs don't snitch.</p>
-        </li>
-        <li class="step reveal">
-          <span class="mono step__n">02</span>
-          <h3>Stack some Sol</h3>
-          <p>Buy SOL on any exchange and send it to your wallet address.</p>
-        </li>
-        <li class="step reveal">
-          <span class="mono step__n">03</span>
-          <h3>Swap for Thug</h3>
-          <p>Open pump.fun or your DEX of choice, paste the contract address below and swap.</p>
-        </li>
-        <li class="step reveal">
-          <span class="mono step__n">04</span>
-          <h3>Glasses on</h3>
-          <p>Make your PFP in the studio, post it in the community and act like you've been here before.</p>
-        </li>
-      </ol>
-
-      <div class="contract reveal">
-        <span class="mono contract__label">Contract address</span>
-        <button class="contract__value" type="button" data-copy aria-label="Copy contract address">
-          <span class="mono" data-ca>9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump</span>
-          <span class="mono contract__copy">Copy</span>
-        </button>
-        <dl class="facts">
-          <div><dt class="mono">Chain</dt><dd>Solana</dd></div>
-          <div><dt class="mono">Supply</dt><dd>1,000,000,000</dd></div>
-          <div><dt class="mono">Tax</dt><dd>0 / 0</dd></div>
-          <div><dt class="mono">Launch</dt><dd>pump.fun</dd></div>
-        </dl>
-        <div class="contract__btns">
-          <a class="btn btn--light" href="https://pump.fun/coin/9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump" target="_blank" rel="noopener">Buy on pump.fun</a>
-          <a class="btn btn--ghost-light" href="https://dexscreener.com/solana/9q1e32Nqwd97gydrVZt9mqeS4GJJ3MBvtbvm8aDtpump" target="_blank" rel="noopener">Chart</a>
-          <a class="btn btn--ghost-light" href="https://x.com/i/communities/2039097758359945589" target="_blank" rel="noopener">
-            <svg class="ico-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            X Community
-          </a>
-        </div>
-      </div>
+  <!-- FINAL -->
+  <section class="final">
+    <div class="sky sky--final" aria-hidden="true"><div class="sky__grad"></div><div class="sky__sun"></div><div class="sky__sea"><i></i></div><div class="grain"></div></div>
+    <div class="final__in">
+      <img class="final__icon" src="assets/icon.png" alt="" width="818" height="855" loading="lazy">
+      <h2 class="display final__h glossy">Leonida is watching.</h2>
+      <a class="btn btn--lg" href="start.html">Start clipping <i data-i="arrow"></i></a>
     </div>
   </section>
 </main>
 
-<!-- ============ FOOTER ============ -->
-<footer class="footer">
-  <div class="wrap footer__top">
-    <div class="footer__brand">
-      <span class="px-glasses" aria-hidden="true"></span>
-      <span class="mono">$THUG &nbsp;·&nbsp; Thug Life</span>
-    </div>
-    <nav class="footer__links mono" aria-label="Footer">
-      <a href="#lore">Lore</a>
-      <a href="#studio">Studio</a>
-      <a href="#buy">Buy</a>
-      <a href="https://x.com/i/communities/2039097758359945589" target="_blank" rel="noopener">X Community ↗</a>
-    </nav>
-  </div>
-  <p class="wrap footer__legal mono">
-    $THUG is a memecoin with no intrinsic value or expectation of financial return. Not financial advice.
-    Not affiliated with, endorsed by, or connected to Rockstar Games, Take-Two Interactive or Grand Theft Auto.
-    © 2026 $THUG.
-  </p>
-  <div class="footer__giant" aria-hidden="true">Thug life</div>
+<footer class="foot">
+  <div class="foot__brand"><img src="assets/icon-256.png" alt="" width="28" height="29"><span>© <span id="yr">2026</span> VICEFEED</span></div>
+  <p>Independent fan project. Not affiliated with Rockstar Games or Take-Two Interactive. $VICEFEED is a memecoin with no expectation of financial return.</p>
 </footer>
 
-<div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="toast" role="status"></div>
 
-<script src="js/joint-data.js"></script>
-<script src="js/main.js?v=3"></script>
-<script src="js/studio.js?v=3"></script>
+<script src="js/icons.js?v=2"></script>
+<script src="js/scene.js?v=2"></script>
+<script src="js/scenes.js?v=2"></script>
+<script src="js/landing.js?v=3"></script>
 </body>
 </html>

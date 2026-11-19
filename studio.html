@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Studio · VICEFEED</title>
+  <meta name="theme-color" content="#08050d">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,600..900&family=Geist:wght@400..800&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=2">
+  <link rel="stylesheet" href="css/studio.css?v=3">
+</head>
+<body class="st-body">
+<div class="shell">
+
+  <!-- sidebar -->
+  <aside class="side">
+    <a class="side__brand" href="./"><img src="assets/icon-256.png" alt=""><img src="assets/wordmark-sm.png" alt="VICEFEED"></a>
+    <a class="btn btn--block side__new" href="editor/"><i data-i="plus"></i>New clip</a>
+    <nav class="side__nav">
+      <a class="is-on" href="studio.html"><i data-i="home"></i><span>Home</span></a>
+      <a href="editor/"><i data-i="film"></i><span>Editor</span></a>
+      <a href="#clips"><i data-i="clip"></i><span>My clips</span><em id="navCount" hidden>0</em></a>
+      <a href="#claim"><i data-i="coins"></i><span>Claim a clip</span></a>
+      <a href="start.html?edit=1"><i data-i="user"></i><span>Profile</span></a>
+    </nav>
+    <div class="side__promo">
+      <img src="assets/icon.png" alt="">
+      <b>Rewards</b>
+      <span>Paid in SOL</span>
+    </div>
+    <div class="me">
+      <span class="me__av" id="meAv">?</span>
+      <span class="me__t"><b id="meHandle">@…</b><span><i data-i="sol" class="i--fill"></i><span id="meWallet">…</span></span></span>
+      <button class="ib" id="signOut" title="Sign out" aria-label="Sign out"><i data-i="logout"></i></button>
+    </div>
+  </aside>
+
+  <!-- main -->
+  <main class="main">
+    <header class="top">
+      <label class="search"><i data-i="search"></i><input id="search" placeholder="Search my clips" aria-label="Search my clips"><kbd>⌘K</kbd></label>
+      <div class="top__r">
+        <span class="chip"><span class="dot dot--pink"></span><span id="day">GTA VI · Day 1</span></span>
+        <button class="ib top__bell" aria-label="Notifications"><i data-i="bell"></i><em></em></button>
+      </div>
+    </header>
+
+    <section class="hello">
+      <h1 class="display hello__h glossy"><span id="greet">Evening</span>, <span class="sunset-text" id="helloHandle">@leonida.clips</span></h1>
+    </section>
+
+    <!-- earnings + stats -->
+    <section class="grid1" id="earn">
+      <article class="earn">
+        <div class="earn__bg" aria-hidden="true"></div>
+        <div class="earn__top">
+          <span class="eyebrow earn__k">Earned so far</span>
+          <span class="chip earn__chip"><i data-i="sol" class="i--fill"></i><span id="earnWallet">Paid in SOL</span></span>
+        </div>
+        <p class="earn__num" id="earnNum">$0<span>.00</span></p>
+        <div class="earn__row">
+          <button class="btn btn--cream" id="claimBtn"><i data-i="wallet"></i>Payout details</button>
+          <span class="earn__note" id="earnNote">Post a clip, paste the link below, and earnings show up here.</span>
+        </div>
+        <svg class="earn__chart" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="ec" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+          <path id="chartFill" d="M0 110 L400 110 L400 120 L0 120Z" fill="url(#ec)"/>
+          <path id="chartLine" d="M0 110 L400 110" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </article>
+      <div class="stats">
+        <article class="stat"><span class="stat__k"><i data-i="eye"></i>Counted views</span><b id="stViews">0</b><span class="stat__d" id="stViewsD">across live clips</span></article>
+        <article class="stat"><span class="stat__k"><i data-i="clip"></i>Clips live</span><b id="stLive">0</b><span class="stat__d" id="stPending">none pending</span></article>
+        <article class="stat"><span class="stat__k"><i data-i="coins"></i>Rate</span><b id="stRate">$0.50</b><span class="stat__d">per 1K views</span></article>
+      </div>
+    </section>
+
+    <!-- claim -->
+    <section class="block claimbox" id="claim">
+      <div class="claimbox__in">
+        <div class="claimbox__copy">
+          <h2>Claim a clip</h2>
+          <p id="claimHelp">Paste your TikTok or X link. We pull the views and check it's from your linked account.</p>
+        </div>
+        <form class="claimbar" id="claimForm" novalidate>
+          <span class="claimbar__pf" id="claimPf"><i data-i="link"></i></span>
+          <input id="claimIn" type="url" inputmode="url" placeholder="https://www.tiktok.com/@you/video/…" autocomplete="off" spellcheck="false" aria-label="Video link">
+          <button class="btn" id="claimGo" type="submit">Claim</button>
+        </form>
+        <p class="claimbox__msg" id="claimMsg" role="status"></p>
+      </div>
+    </section>
+
+    <!-- clips + side -->
+    <section class="grid2">
+      <div class="block" id="clips">
+        <header class="block__h"><h2>My clips</h2><div class="seg" id="seg"><button class="is-on" data-f="all">All</button><button data-f="live">Live</button><button data-f="pending">Pending</button></div></header>
+        <div class="table" id="table">
+          <div class="tr th"><span>Clip</span><span>Views</span><span>Earned</span><span>Status</span></div>
+          <div id="rows"></div>
+          <div class="empty" id="empty">
+            <img src="assets/icon.png" alt="">
+            <b>No clips yet</b>
+            <span>Make one in the editor, post it on TikTok or X, then paste the link above.</span>
+            <a class="ghost ghost--sm" href="editor/"><i data-i="film"></i>Open the editor</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <a class="mk" href="editor/">
+          <div class="mk__vis"><canvas data-still="highway" data-t="3.4"></canvas><span class="wm"><img class="wm__icon" src="assets/icon-256.png" alt=""><span class="wm__txt"><img src="assets/wordmark-sm.png" alt=""><span id="mkHandle">@you</span></span></span></div>
+          <div class="mk__t"><b>Make a clip</b><span>Your watermark is already in the editor.</span></div>
+          <i data-i="arrow"></i>
+        </a>
+        <div class="block hot">
+          <header class="block__h"><h2><i data-i="flame"></i>Hot right now</h2></header>
+          <ol class="hot__list">
+            <li><span>01</span><b>Vice City bridge jump</b><em>+412%</em></li>
+            <li><span>02</span><b>First 5-star wanted level</b><em>+268%</em></li>
+            <li><span>03</span><b>Leonida gator encounters</b><em>+190%</em></li>
+            <li><span>04</span><b>Streamer first reactions</b><em>+144%</em></li>
+            <li><span>05</span><b>Ocean Drive at night</b><em>+97%</em></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- mobile tab bar -->
+  <nav class="tabbar">
+    <a class="is-on" href="studio.html"><i data-i="home"></i>Home</a>
+    <a href="#clips"><i data-i="clip"></i>Clips</a>
+    <a class="tabbar__new" href="editor/" aria-label="New clip"><i data-i="plus"></i></a>
+    <a href="#claim"><i data-i="coins"></i>Claim</a>
+    <a href="start.html?edit=1"><i data-i="user"></i>Profile</a>
+  </nav>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<script src="js/icons.js?v=2"></script>
+<script src="js/scenes.js?v=2"></script>
+<script src="js/profile.js?v=2"></script>
+<script src="js/studio.js?v=3"></script>
+</body>
+</html>
